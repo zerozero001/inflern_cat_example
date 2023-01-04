@@ -58,22 +58,31 @@
         },
       };
 
+      const fetchCat = async (text) => {
+        const OPEN_API_DOMAIN = "https://cataas.com";
+        const response = await fetch(
+          `${OPEN_API_DOMAIN}/cat/says/${text}?json=true`
+        );
+        const responseJson = await response.json();
+        return `${OPEN_API_DOMAIN}/${responseJson.url}`;
+      };
+
       const render = document.querySelector("#app");
 
       const Title = (props) => {
         return <h1>{props.title}</h1>;
       };
 
-      const Line = (props) => {
+      const Form = (props) => {
         const [value, setValue] = React.useState("");
         const [errorMessage, setErrorMessage] = React.useState("");
 
         const includesHangul = (text) => /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/i.test(text);
 
         function handleInputChange(ev) {
-          console.log("ev : ", ev.target.value.toUpperCase());
+          //console.log("ev : ", ev.target.value.toUpperCase());
           const userValue = ev.target.value;
-          console.log(includesHangul(userValue));
+          //console.log(includesHangul(userValue));
 
           setErrorMessage("");
           if (includesHangul(userValue)) {
@@ -91,7 +100,7 @@
             return;
           }
 
-          props.updateMainCat();
+          props.updateMainCat(value);
         }
 
         return (
@@ -150,9 +159,11 @@
           jsonLocalStorage.getItem("favoriteList") || []
         );
 
-        function updateMainCat() {
+        async function updateMainCat(text) {
+          let newURL = await fetchCat(text);
+          console.log("newURL : ", newURL);
           setCounter(counter + 1);
-          setMainCat(CAT2);
+          setMainCat(newURL);
           jsonLocalStorage.setItem("catCount", counter + 1);
         }
 
@@ -165,7 +176,7 @@
         return (
           <div>
             <Title title={counter + "번째 고양이 가라사대"}></Title>
-            <Line updateMainCat={updateMainCat}></Line>
+            <Form updateMainCat={updateMainCat}></Form>
             <MainCard
               image={mainCat}
               onHeartClick={handleHeartClick}
